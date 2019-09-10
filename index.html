@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"
+        integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+    </script>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <br>
+        <div class="jumbotron">
+            <h1 class="display-4">Send Message</h1>
+            <br>
+            <input id="name" class="form-control" placeholder="Name">
+            <br>
+            <textarea id="message" class="form-control" placeholder="Your Message Here">Hello</textarea>
+            <br>
+            <button id="send" class="btn btn-success">Send</button>
+            <button id="delete" class="btn btn-success" style="background: red">Delete All</button>
+        </div>
+        <div id="messages">
+
+        </div>
+    </div>
+
+    <script>
+
+        var url = 'http://localhost:3000/messages';
+
+        $(() => {
+            $("#send").click(() => {
+                sendMessage({
+                    name: $("#name").val(),
+                    message: $("#message").val()
+                });
+            })
+
+            $("#delete").click(() => {
+                deleteMessages();
+            })
+
+            getMessages()
+        })
+
+        function addMessages(message) {
+            $("#messages").append(`
+      <h4> ${message.name} </h4>
+      <p>  ${message.message} </p>`)
+        }
+
+        function getMessages() {
+            $.get(url, (data) => {
+                data.forEach(addMessages);
+            })
+        }
+
+        function sendMessage(message) {
+            $.post(url, message)
+        }
+
+        function deleteMessages() {
+            $.ajax({
+                type: "DELETE",
+                url: url
+            });
+        }
+
+    </script>
+
+    <script>
+        var socket = io();
+        socket.on('message', addMessages);
+        socket.on('delete', () => {
+            if (!alert("All data Deleted"))
+                document.location.reload(true)
+        });
+</script>
+
+</body>
+
+</html>
